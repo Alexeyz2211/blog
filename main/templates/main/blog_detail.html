@@ -1,0 +1,12 @@
+{% extends 'main/base.html' %}
+{% block title %}{{ blog.title }}{% endblock %}
+
+{% block content %}
+    <h2>{{ blog.title }}</h2>
+    <h1>{{ blog.description }}</h1><a>follow</a>
+    {% for post in blog.post_set.all %}
+        <a href="{% url 'main:post-detail' post.id %}"><h1>{{ post.title }}</h1></a>
+        <p>{{ post.content }}</p>
+        <p>{{ post.post_time }}</p>
+    {% endfor %}
+{% endblock %}

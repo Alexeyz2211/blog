@@ -1,0 +1,20 @@
+{% extends 'main/base.html' %}
+{% block title %}{% endblock %}
+
+{% block content %}
+    <a href="{% url 'main:subscribes' %} "><p>subscribes</p></a>
+    <a href="{% url 'main:post-create' %} "><p>create post</p></a>
+    <div>
+        {% for p in personal %}
+            <a href="{% url 'main:post-detail' p.id %}"><h1>{{ p.title }}</h1></a>
+            <p>{{ p.content }}</p>
+            <p>{{ p.post_time }}</p>
+        {% endfor %}
+<h1>-------------------------------------------------------------</h1>
+        {% for post in posts %}
+            <a href="{% url 'main:post-detail' post.id %}"><h1>{{ post.title }}</h1></a>
+            <p>{{ post.content }}</p>
+            <p>{{ post.post_time }}</p>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,10 @@
+{% extends 'main/base.html' %}
+{% block title %}Subscribes{% endblock %}
+{% block content %}
+        {% for subscribe in subscribes %}
+            <a href="{% url 'main:blog-detail' subscribe.blog.id %}">{{ subscribe.blog.title }}</a>
+            <p>{{ subscribe.subscription_date }}</p>
+            <a href="{% url 'main:subscribe-delete' subscribe.id %}"><p>dismiss</p></a>
+        {% endfor %}
+
+{% endblock %}
