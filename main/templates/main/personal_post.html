@@ -2,6 +2,7 @@
 {% block title %}{% endblock %}
 
 {% block content %}
+    <a href="{% url 'main:post-create' %} "><p>create post</p></a>
     <div>
         {% for post in posts %}
             <a href="{% url 'main:post-detail' post.id %}"><h1>{{ post.title }}</h1></a>

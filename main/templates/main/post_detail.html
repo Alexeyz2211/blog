@@ -2,7 +2,9 @@
 {% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
-    <h1>{{ post.content }}</h1>
-    <a href=""><p>change</p></a>
-    <a href=""><p>delete</p></a>
+    <h1>{{ post.content }}</h1><a href="{% url 'main:post-addreadhistory' post.id %}">read</a>
+    {% if request.user == post.blog.user %}
+        <a href="{% url 'main:post-update' post.id %}"><p>change</p></a>
+        <a href="{% url 'main:post-delete' post.id %}"><p>delete</p></a>
+    {% endif %}
 {% endblock %}

@@ -3,7 +3,8 @@
 
 {% block content %}
     <h2>{{ blog.title }}</h2>
-    <h1>{{ blog.description }}</h1><a>follow</a>
+    <h1>{{ blog.description }}</h1>
+    <a href="{% url 'main:subscribes-add' blog.id %}">follow</a>
     {% for post in blog.post_set.all %}
         <a href="{% url 'main:post-detail' post.id %}"><h1>{{ post.title }}</h1></a>
         <p>{{ post.content }}</p>

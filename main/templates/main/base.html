@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <title>{% block title %}{% endblock %}</title>
 </head>
+<a href="{% url 'main:index' %}"><h3>main page</h3></a>
+<a href="{% url 'main:personal' %}"><h3>personal page</h3></a>
+<a href="{% url 'main:personal-post' %}"><h3>personal post page</h3></a>
+<a href="{% url 'main:subscribes' %}"><h3>subscribes page</h3></a>
 <body>
 {% block content %}
 {% endblock %}

@@ -1,3 +1,5 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from django.views import View
 from django.views.generic import DetailView, TemplateView, CreateView, UpdateView
@@ -47,6 +49,14 @@ class SubscribesView(TemplateView):
         return context
 
 
+class SubscribesAddView(View):
+    def get(self, request, pk):
+        user = request.user
+        blog = models.Blog.objects.get(id=pk)
+        new_subscribe = models.Subscription.objects.get_or_create(blog=blog, user=user)
+        return redirect('main:subscribes')
+
+
 class SubscribeDeleteView(View):
     def get(self, request, pk):
         subscribe = models.Subscription.objects.get(id=pk)
@@ -59,7 +69,6 @@ class PersonalView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['personal'] = models.Post.objects.filter(blog__user=self.request.user)
         context['posts'] = (
             models.Post.objects
                 .filter(blog__subscription__user=self.request.user)
@@ -68,19 +77,53 @@ class PersonalView(TemplateView):
         return context
 
 
-class CreatePostView(CreateView):
+class PersonalPostView(TemplateView):
+    template_name = 'main/personal_post.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['posts'] = (
+            models.Post.objects
+                .filter(blog__user=self.request.user)
+        )
+        return context
+
+
+class CreatePostView(LoginRequiredMixin, CreateView):
     template_name = 'main/create_post.html'
     form_class = CreateForm
-    success_url = '/'
+    success_url = '/personal'
+
+    def form_valid(self, form):
+        form.instance.blog = models.Blog.objects.get(user=self.request.user)
+        return super(CreatePostView, self).form_valid(form)
 
 
 class PostUpdate(UpdateView):
     model = models.Post
     fields = ['title', 'content']
+    template_name_suffix = 'main/post_update_form'
+    success_url = '/personal'
+
+    def form_valid(self, form):
+        post = models.Post.objects.select_related('blog').select_related('blog__user').get(id=self.kwargs['pk'])
+        if post.blog.user == self.request.user:
+            return super(PostUpdate, self).form_valid(form)
+        raise PermissionDenied()
 
 
-class PostDelete(View):
+class PostDelete(LoginRequiredMixin, View):
+    def get(self, request, pk):
+        post = models.Post.objects.select_related('blog').select_related('blog__user').get(id=pk)
+        if post.blog.user == self.request.user:
+            post.delete()
+            return redirect('main:personal')
+        raise PermissionDenied()
+
+
+class AddPostReadHistory(View):
     def get(self, request, pk):
         post = models.Post.objects.get(id=pk)
-        if request.user.is_authenticated:
-            pass
+        user = self.request.user.id
+        new_post_history = models.PostReadHistory.objects.get_or_create(post=post, user=user)
+        return redirect('main:personal')
