@@ -47,8 +47,12 @@ class PostReadHistory(models.Model):
         'Post',
         on_delete=models.CASCADE
     )
-    user = models.EmailField(null=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE)
     date_created = models.DateTimeField('Дата прочтения поста', auto_now_add=True)
 
     def __str__(self):
-        return f'{self.user} read {self.post}'
+        return f'{self.post.id}'

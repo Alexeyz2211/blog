@@ -5,6 +5,9 @@
     <div>
         {% for post in posts %}
             <a href="{% url 'main:post-detail' post.id %}"><h1>{{ post.title }}</h1></a>
+            {% if post in readposts %}
+                <p>""read""</p>
+            {% endif %}
             <p>{{ post.content }}</p>
             <p>{{ post.post_time }}</p>
         {% endfor %}

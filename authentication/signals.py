@@ -14,3 +14,4 @@ def on_user_save(instance: models.User, created: bool, **kwargs: Dict[str, Any])
             title=f'{instance.first_name}\'s blog',
             user=instance
         )
+

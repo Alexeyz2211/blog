@@ -35,7 +35,7 @@ class BlogDetailView(DetailView):
     context_object_name = 'blog'
 
 
-class SubscribesView(TemplateView):
+class SubscribesView(LoginRequiredMixin, TemplateView):
     template_name = 'main/subscribes.html'
 
     def get_context_data(self, **kwargs):
@@ -53,7 +53,7 @@ class SubscribesAddView(View):
     def get(self, request, pk):
         user = request.user
         blog = models.Blog.objects.get(id=pk)
-        new_subscribe = models.Subscription.objects.get_or_create(blog=blog, user=user)
+        models.Subscription.objects.get_or_create(blog=blog, user=user)
         return redirect('main:subscribes')
 
 
@@ -64,7 +64,7 @@ class SubscribeDeleteView(View):
         return redirect('main:subscribes')
 
 
-class PersonalView(TemplateView):
+class PersonalView(LoginRequiredMixin, TemplateView):
     template_name = 'main/personal.html'
 
     def get_context_data(self, **kwargs):
@@ -74,10 +74,12 @@ class PersonalView(TemplateView):
                 .filter(blog__subscription__user=self.request.user)
                 .order_by('-post_time')
         )
+        readhistory = models.PostReadHistory.objects.filter(user=self.request.user)
+        context['readposts'] = [h.post for h in readhistory]
         return context
 
 
-class PersonalPostView(TemplateView):
+class PersonalPostView(LoginRequiredMixin, TemplateView):
     template_name = 'main/personal_post.html'
 
     def get_context_data(self, **kwargs):
@@ -92,7 +94,7 @@ class PersonalPostView(TemplateView):
 class CreatePostView(LoginRequiredMixin, CreateView):
     template_name = 'main/create_post.html'
     form_class = CreateForm
-    success_url = '/personal'
+    success_url = '/personal/posts'
 
     def form_valid(self, form):
         form.instance.blog = models.Blog.objects.get(user=self.request.user)
@@ -103,7 +105,7 @@ class PostUpdate(UpdateView):
     model = models.Post
     fields = ['title', 'content']
     template_name_suffix = 'main/post_update_form'
-    success_url = '/personal'
+    success_url = '/personal/posts'
 
     def form_valid(self, form):
         post = models.Post.objects.select_related('blog').select_related('blog__user').get(id=self.kwargs['pk'])
@@ -117,13 +119,14 @@ class PostDelete(LoginRequiredMixin, View):
         post = models.Post.objects.select_related('blog').select_related('blog__user').get(id=pk)
         if post.blog.user == self.request.user:
             post.delete()
-            return redirect('main:personal')
+            return redirect('main:personal-post')
         raise PermissionDenied()
 
 
 class AddPostReadHistory(View):
     def get(self, request, pk):
-        post = models.Post.objects.get(id=pk)
-        user = self.request.user.id
-        new_post_history = models.PostReadHistory.objects.get_or_create(post=post, user=user)
+        post = models.Post.objects.select_related('blog').get(id=pk)
+        user = self.request.user
+        subscription = models.Subscription.objects.get(blog=post.blog, user=user)
+        models.PostReadHistory.objects.get_or_create(post=post, user=user, subscription=subscription)
         return redirect('main:personal')
